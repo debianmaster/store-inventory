@@ -3,7 +3,7 @@ RUN mkdir /app
 RUN go get github.com/gin-gonic/gin && go get github.com/go-sql-driver/mysql 
 ADD . /app/
 WORKDIR /app
-RUN go build -o main .
+RUN env GOOS=linux GOARCH=386 go build -o main .
 
 
 FROM scratch
