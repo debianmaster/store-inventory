@@ -6,11 +6,8 @@ WORKDIR /app
 RUN env GOOS=linux GOARCH=386 go build -o main .
 
 
-#FROM scratch
-#COPY --from=0 /app/main . 
+FROM scratch
+COPY --from=0 /app/main . 
 
 EXPOSE 8080
 CMD ["/app/main"]
-
-
-#CMD ["/main"]
