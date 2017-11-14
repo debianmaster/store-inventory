@@ -1,5 +1,3 @@
-# store-inventory
-
 
 
 # DATABASE
