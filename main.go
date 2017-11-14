@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
-	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/lib/pq"
 )
 
 func index(c *gin.Context) {
@@ -48,8 +48,10 @@ func fetch(c *gin.Context) {
 		invt      InventoryItem
 		inventory []InventoryItem
 	)
-	connStr := os.Getenv("sql_user") + ":" + os.Getenv("sql_password") + "@tcp(" + os.Getenv("sql_host") + ":3306)/" + os.Getenv("sql_db")
-	db, err := sql.Open("mysql", connStr)
+	//connStr := "postgresql://" + os.Getenv("sql_user") + ":" + os.Getenv("sql_password") + "@" + os.Getenv("sql_host") + ":" + os.Getenv("sql_port") + "/" + os.Getenv("sql_db") + "?sslmode=disable"
+	connStr := os.Getenv("sql_string")
+	//connStr := "postgresql://root@localhost:26257/store?sslmode=disable"
+	db, err := sql.Open("postgres", connStr)
 	checkErr(err)
 	defer db.Close()
 	rows, err := db.Query("SELECT * FROM inventory;")
