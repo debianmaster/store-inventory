@@ -13,7 +13,7 @@ podTemplate(label: 'docker',
     stage('Build Docker image') {
       git 'https://github.com/debianmaster/store-inventory.git'
       container('docker') {
-        sh "docker login -u debianmaster -p c0mputer"
+        sh "docker login -u debianmaster -p mypass"
         sh "docker build -t ${image} ."
         //sh "docker pull debianmaster/go-welcome"
         sh "docker push ${image}"
