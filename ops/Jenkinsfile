@@ -1,0 +1,23 @@
+podTemplate(label: 'docker',
+  cloud: 'kubernetes',
+  imagePullSecrets: [ 'hub-secret' ],
+  containers: [containerTemplate(name: 'docker',privileged: true, image: 'docker:1.11', ttyEnabled: true, command: 'cat')],
+  volumes: [
+    hostPathVolume(hostPath: '/var/run/docker.sock', mountPath: '/var/run/docker.sock'),
+    secretVolume(mountPath: '/home/jenkins/.docker', secretName: 'hub-secret'),
+  ]
+  ) {
+
+  def image = "debianmaster/store-inventory"
+  node('docker') {
+    stage('Build Docker image') {
+      git 'https://github.com/debianmaster/store-inventory.git'
+      container('docker') {
+        sh "docker login -u debianmaster -p c0mputer"
+        sh "docker build -t ${image} ."
+        //sh "docker pull debianmaster/go-welcome"
+        sh "docker push ${image}"
+      }
+    }
+  }
+}
