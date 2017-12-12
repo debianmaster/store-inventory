@@ -7,5 +7,5 @@ WORKDIR /app
 RUN env GOOS=linux GOARCH=386 go build -o main .  && chmod +x main
 
 
-EXPOSE 8080
+EXPOSE 8000
 CMD ["/app/main"]
