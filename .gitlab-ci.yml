@@ -1,0 +1,65 @@
+# This file is a template, and might need editing before it works on your project.
+image: golang:latest
+
+variables:
+  # Please edit to your GitLab project
+  REPO_NAME: gitlab.com/i63io/store-inventory
+
+before_script:
+
+cache:
+  untracked: true
+  key: "$CI_BUILD_REF_NAME"
+  paths:
+    - /go/src/github.com/
+
+#- docker login -u dynamostack -p $CI_BUILD_TOKEN registry.gitlab.com
+
+stages:
+    - build
+    - release
+    - deploy-to-dev
+    - deploy-to-qa
+
+compile:
+    stage: build
+    script:
+      - mkdir -p $GOPATH/src/$REPO_NAME
+      - ln -svf $CI_PROJECT_DIR/* $GOPATH/src/$REPO_NAME
+      - cd $GOPATH/src/$REPO_NAME
+      - go get github.com/gin-gonic/gin
+      - go get github.com/lib/pq
+      - env GOOS=linux GOARCH=386 go build -o $CI_PROJECT_DIR/store-inventory
+    artifacts:
+      paths:
+        - store-inventory
+release:
+    stage: release
+    image: docker:git
+    services:
+      - docker:dind
+    script:
+      - export DOCKER_HOST="tcp://0.0.0.0:2375"
+      - docker build -t debianmaster/store-inventory -f Dockerfile.binary .
+
+dev:
+    stage: deploy-to-dev
+    image: debianmaster/kubectl
+    before_script:
+    script:
+      - kubectl run --image=debianmaster/store-inventory store-inventory --port 8000 --expose -n dev || true
+      - kubectl set image deployments,rc store-inventory=debianmaster/store-inventory:latest --all -n dev
+      - kubectl get po
+
+qa:
+    stage: deploy-to-qa
+    image: debianmaster/kubectl
+    before_script:
+    when: manual
+    script:
+      - kubectl run --image=debianmaster/store-inventory store-inventory --port 8000 --expose -n qa || true
+      - kubectl set image deployments,rc store-inventory=debianmaster/store-inventory:latest --all -n qa
+      - kubectl get po
+    environment:
+      name: "qa"
+      url: http://store-inventory-qa.azure.ck.osecloud.com
